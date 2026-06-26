@@ -1,35 +1,28 @@
-﻿import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Hls from "hls.js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RefreshCw, Play, PlugZap, Radio, Square } from "lucide-react";
-import { getConfiguredHlsUrl } from "@/config/stream";
 
 const STORAGE_KEY = "mtd.hls.url";
 const STORAGE_OPTS = "mtd.hls.opts";
-const DEFAULT_URL = getConfiguredHlsUrl();
+const DEFAULT_URL = "http://127.0.0.1:8890/live/stream/index.m3u8";
 
 type Opts = { autoplay: boolean; muted: boolean; controls: boolean };
-type HlsErrorLike = {
-  type?: string;
-  details?: string;
-  response?: { code?: number };
-  fatal?: boolean;
-};
 
-function translateHlsError(data: HlsErrorLike | null | undefined): string {
+function translateHlsError(data: any): string {
   if (!data) return "Unbekannter HLS-Fehler.";
   const { type, details, response } = data;
   if (details === "manifestLoadError" || details === "manifestLoadTimeOut") {
-    return "HLS-Manifest nicht erreichbar. Laeuft der Streaming-Server?";
+    return "HLS-Manifest nicht erreichbar. Läuft der Streaming-Server?";
   }
-  if (details === "manifestParsingError") return "HLS-Manifest konnte nicht gelesen werden.";
+  if (details === "manifestParsingError") return "HLS-Manifest konnte nicht gelesen werden (Format ungültig).";
   if (details === "levelLoadError") return "Stream-Level nicht erreichbar. Stream offline?";
-  if (response?.code === 0) return "Netzwerk-/CORS-Fehler. Bitte CORS am Server pruefen.";
+  if (response?.code === 0) return "Netzwerk-/CORS-Fehler. Bitte CORS am Server prüfen.";
   if (type === "networkError") return "Netzwerkfehler beim Laden des Streams.";
-  if (type === "mediaError") return "Medienfehler. Format nicht unterstuetzt oder defekter Stream.";
+  if (type === "mediaError") return "Medienfehler. Format nicht unterstützt oder defekter Stream.";
   return `HLS-Fehler: ${details || type || "unbekannt"}`;
 }
 
@@ -41,11 +34,9 @@ export function HlsPlayer() {
   const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
   const [opts, setOpts] = useState<Opts>(() => {
     try {
-      const value = localStorage.getItem(STORAGE_OPTS);
-      if (value) return JSON.parse(value) as Opts;
-    } catch {
-      // Keep defaults when local storage contains invalid JSON.
-    }
+      const v = localStorage.getItem(STORAGE_OPTS);
+      if (v) return JSON.parse(v);
+    } catch {/* */}
     return { autoplay: true, muted: true, controls: true };
   });
   const [error, setError] = useState<string | null>(null);
@@ -60,18 +51,12 @@ export function HlsPlayer() {
 
   const destroy = useCallback(() => {
     if (hlsRef.current) {
-      try { hlsRef.current.destroy(); } catch {/* noop */}
+      try { hlsRef.current.destroy(); } catch {/* */}
       hlsRef.current = null;
     }
-    const video = videoRef.current;
-    if (video) {
-      try {
-        video.pause();
-        video.removeAttribute("src");
-        video.load();
-      } catch {
-        // Ignore browser cleanup quirks.
-      }
+    const v = videoRef.current;
+    if (v) {
+      try { v.pause(); v.removeAttribute("src"); v.load(); } catch {/* */}
     }
   }, []);
 
@@ -94,18 +79,21 @@ export function HlsPlayer() {
     setLoadedUrl(target);
     setActive(true);
 
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    const canNative = video.canPlayType("application/vnd.apple.mpegurl");
+
+    if (canNative) {
       video.src = target;
-      if (opts.autoplay) video.play().catch(() => {/* user gesture required */});
+      if (opts.autoplay) video.play().catch(() => {/* user gesture */});
       return;
     }
 
     if (!Hls.isSupported()) {
-      setError("HLS wird in diesem Browser nicht unterstuetzt.");
+      setError("HLS wird in diesem Browser nicht unterstützt.");
       setActive(false);
       return;
     }
 
+    // No auto-retry / no auto-reconnect: disable internal retry loops.
     const hls = new Hls({
       enableWorker: true,
       manifestLoadingMaxRetry: 0,
@@ -116,19 +104,21 @@ export function HlsPlayer() {
     hls.loadSource(target);
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      if (opts.autoplay) video.play().catch(() => {/* user gesture required */});
+      if (opts.autoplay) video.play().catch(() => {/* */});
     });
-    hls.on(Hls.Events.ERROR, (_event, data) => {
+    hls.on(Hls.Events.ERROR, (_e, data) => {
       if (data.fatal) {
         setError(translateHlsError(data));
         setPlaying(false);
         setActive(false);
-        try { hls.destroy(); } catch {/* noop */}
+        // Hard stop — no recovery, no retry.
+        try { hls.destroy(); } catch {/* */}
         if (hlsRef.current === hls) hlsRef.current = null;
       }
     });
   }, [destroy, opts.autoplay]);
 
+  // Cleanup on unmount only — no auto-load on mount.
   useEffect(() => {
     return () => destroy();
   }, [destroy]);
@@ -138,22 +128,22 @@ export function HlsPlayer() {
     setTestResult(null);
     try {
       const res = await fetch(url, { method: "GET", cache: "no-store" });
-      if (res.ok) setTestResult(`OK / HTTP ${res.status}`);
-      else setTestResult(`Fehler / HTTP ${res.status}`);
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "unbekannt";
-      setTestResult(`Nicht erreichbar (CORS/Netzwerk): ${message}`);
+      if (res.ok) setTestResult(`OK · HTTP ${res.status}`);
+      else setTestResult(`Fehler · HTTP ${res.status}`);
+    } catch (e: any) {
+      setTestResult(`Nicht erreichbar (CORS/Netzwerk): ${e?.message ?? "unbekannt"}`);
     } finally {
       setTesting(false);
     }
   }, [url]);
 
   return (
-    <div className="carbon-panel overflow-hidden">
-      <div className="relative aspect-video bg-black">
+    <div className="carbon-panel rounded-md overflow-hidden">
+      {/* Video area */}
+      <div className="relative bg-black aspect-video">
         <video
           ref={videoRef}
-          className="h-full w-full bg-black object-contain"
+          className="w-full h-full object-contain bg-black"
           controls={opts.controls}
           muted={opts.muted}
           playsInline
@@ -162,35 +152,38 @@ export function HlsPlayer() {
           onWaiting={() => setPlaying(false)}
         />
 
+        {/* Overlay when not playing */}
         {!playing && (
-          <div className="absolute inset-0 grid place-items-center bg-gradient-hero pointer-events-none">
-            <div className="px-4 text-center">
-              <Radio className="mx-auto mb-3 h-12 w-12 text-primary/60" />
-              <div className="font-display text-2xl font-black uppercase italic tracking-[0.08em] text-foreground md:text-3xl">
-                {error ? "STREAM OFFLINE" : active ? "STREAM WIRD GELADEN..." : "KEIN STREAM AKTIV"}
+          <div className="absolute inset-0 grid place-items-center pointer-events-none bg-gradient-hero">
+            <div className="text-center px-4">
+              <Radio className="h-12 w-12 mx-auto text-primary/60 mb-3" />
+              <div className="font-display text-2xl md:text-3xl font-bold tracking-wider text-foreground">
+                {error ? "STREAM OFFLINE" : active ? "STREAM WIRD GELADEN…" : "KEIN STREAM AKTIV"}
               </div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                {error ? error : active ? "Warte auf HLS-Manifest..." : "Klicke auf Stream laden, um den HLS-Stream zu starten."}
+              <div className="text-sm text-muted-foreground mt-1">
+                {error ? error : active ? "Warte auf HLS-Manifest…" : 'Klicke auf „Stream laden“, um den HLS-Stream zu starten.'}
               </div>
             </div>
           </div>
         )}
 
+        {/* LIVE badge */}
         {playing && (
-          <div className="live-chip">
-            <span className="blink h-2 w-2 rounded-full bg-white" />
-            <span>LIVE</span>
+          <div className="absolute top-3 left-3 inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-gradient-live live-pulse">
+            <span className="h-2 w-2 rounded-full bg-white blink" />
+            <span className="text-xs font-display font-bold tracking-widest text-white">LIVE</span>
           </div>
         )}
       </div>
 
-      <div className="space-y-3 border-t border-border p-4">
+      {/* Controls */}
+      <div className="p-4 space-y-3 border-t border-border">
         <div className="flex items-center justify-between gap-2">
           <div className="text-[10px] font-mono-tech uppercase tracking-widest text-muted-foreground">
             HLS Player
           </div>
           {loadedUrl && (
-            <div className="max-w-[60%] truncate text-[10px] font-mono-tech text-muted-foreground" title={loadedUrl}>
+            <div className="text-[10px] font-mono-tech text-muted-foreground truncate max-w-[60%]" title={loadedUrl}>
               {loadedUrl}
             </div>
           )}
@@ -200,7 +193,7 @@ export function HlsPlayer() {
           <Label htmlFor="hls-url" className="text-xs font-mono-tech uppercase tracking-widest text-muted-foreground">
             HLS Stream URL
           </Label>
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input
               id="hls-url"
               value={url}
@@ -219,7 +212,7 @@ export function HlsPlayer() {
                 <Square className="h-4 w-4" /> Stop
               </Button>
               <Button variant="secondary" onClick={testConnection} disabled={testing} className="gap-2">
-                <PlugZap className="h-4 w-4" /> {testing ? "Teste..." : "Verbindung testen"}
+                <PlugZap className="h-4 w-4" /> {testing ? "Teste…" : "Verbindung testen"}
               </Button>
             </div>
           </div>
@@ -229,29 +222,33 @@ export function HlsPlayer() {
         </div>
 
         <div className="flex flex-wrap items-center gap-4 pt-2">
-          {(["autoplay", "muted", "controls"] as const).map((key) => (
-            <label key={key} className="inline-flex cursor-pointer items-center gap-2 text-xs font-mono-tech uppercase tracking-widest text-muted-foreground">
+          {(["autoplay", "muted", "controls"] as const).map((k) => (
+            <label key={k} className="inline-flex items-center gap-2 text-xs font-mono-tech uppercase tracking-widest text-muted-foreground cursor-pointer">
               <Checkbox
-                checked={opts[key]}
-                onCheckedChange={(value) => setOpts((current) => ({ ...current, [key]: !!value }))}
+                checked={opts[k]}
+                onCheckedChange={(v) => setOpts((o) => ({ ...o, [k]: !!v }))}
               />
-              {key === "controls" ? "Controls anzeigen" : key.charAt(0).toUpperCase() + key.slice(1)}
+              {k === "controls" ? "Controls anzeigen" : k.charAt(0).toUpperCase() + k.slice(1)}
             </label>
           ))}
         </div>
 
         {error && (
-          <div className="border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">
-            {error} / Kein automatischer Reconnect. Bitte manuell Stream laden druecken.
+          <div className="rounded-sm border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">
+            {error} · Kein automatischer Reconnect. Bitte manuell „Stream laden“ drücken.
           </div>
         )}
 
-        <div className="border-t border-border pt-3 text-[11px] leading-relaxed text-muted-foreground">
+        <div className="text-[11px] text-muted-foreground leading-relaxed border-t border-border pt-3">
           OBS sendet per RTMP an den Streaming-Server. Die Webseite spielt die daraus erzeugte HLS-URL ab.
           <br />
-          <span className="font-mono-tech">Produktion:</span> /hls/live/stream/index.m3u8
+          <span className="font-mono-tech">Beispiel MediaMTX lokal:</span>
           <br />
-          <span className="font-mono-tech">Development fallback:</span> http://31.70.86.73:8890/live/stream/index.m3u8
+          <span className="font-mono-tech">OBS Server:</span> rtmp://127.0.0.1:1936/live
+          <br />
+          <span className="font-mono-tech">OBS Stream Key:</span> stream
+          <br />
+          <span className="font-mono-tech">HLS URL:</span> http://127.0.0.1:8890/live/stream/index.m3u8
         </div>
       </div>
     </div>

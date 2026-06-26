@@ -1,182 +1,118 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 2%;
+    /* MTD Motorsport Broadcast Theme */
+    --background: 0 0% 4%;
     --foreground: 0 0% 96%;
+
     --card: 0 0% 7%;
     --card-foreground: 0 0% 96%;
+
     --popover: 0 0% 7%;
     --popover-foreground: 0 0% 96%;
-    --primary: 358 85% 46%;
+
+    --primary: 0 85% 52%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 10%;
+
+    --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 96%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 2% 66%;
-    --accent: 46 97% 50%;
-    --accent-foreground: 0 0% 3%;
-    --destructive: 358 85% 46%;
+
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 62%;
+
+    --accent: 48 100% 50%;
+    --accent-foreground: 0 0% 6%;
+
+    --destructive: 0 85% 52%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 18%;
-    --input: 0 0% 11%;
-    --ring: 46 97% 50%;
-    --radius: 0.25rem;
-    --live: 358 85% 46%;
-    --live-glow: 358 90% 54%;
-    --signal-on: 142 58% 46%;
+
+    --border: 0 0% 16%;
+    --input: 0 0% 14%;
+    --ring: 0 85% 52%;
+
+    --radius: 0.375rem;
+
+    /* Broadcast specific */
+    --live: 0 90% 54%;
+    --live-glow: 0 100% 60%;
+    --signal-on: 142 76% 45%;
     --signal-off: 0 0% 28%;
-    --gold: 46 97% 50%;
-    --carbon: 0 0% 7%;
-    --carbon-elevated: 0 0% 10%;
-    --ticker-bg: 0 0% 3%;
-    --special: 303 100% 41%;
-    --gradient-hero: linear-gradient(125deg, hsl(358 92% 18% / 0.78) 0 28%, transparent 28% 100%), linear-gradient(155deg, hsl(358 85% 46% / 0.36) 0 18%, transparent 18% 100%), #050505;
-    --gradient-live: linear-gradient(90deg, #d91117, #870608);
-    --gradient-card: linear-gradient(180deg, #191919, #111111);
-    --shadow-glow-red: 0 0 24px hsl(358 85% 46% / 0.35);
-    --shadow-glow-gold: 0 0 22px hsl(46 97% 50% / 0.22);
+    --gold: 48 100% 50%;
+    --carbon: 0 0% 9%;
+    --carbon-elevated: 0 0% 11%;
+    --ticker-bg: 0 0% 5%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(0 85% 22% / 0.6) 0%, hsl(0 0% 4%) 60%), 
+                     radial-gradient(circle at 80% 20%, hsl(48 100% 50% / 0.15), transparent 50%);
+    --gradient-live: linear-gradient(90deg, hsl(0 90% 50%), hsl(0 85% 42%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 9%), hsl(0 0% 6%));
+    --shadow-glow-red: 0 0 24px hsl(0 90% 54% / 0.35);
+    --shadow-glow-gold: 0 0 24px hsl(48 100% 50% / 0.25);
+
     --sidebar-background: 0 0% 6%;
     --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 358 85% 46%;
+    --sidebar-primary: 0 85% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 12%;
     --sidebar-accent-foreground: 0 0% 96%;
     --sidebar-border: 0 0% 16%;
-    --sidebar-ring: 46 97% 50%;
+    --sidebar-ring: 0 85% 52%;
   }
 
   .dark {
-    --background: 0 0% 2%;
+    --background: 0 0% 4%;
     --foreground: 0 0% 96%;
   }
+}
 
-  * { @apply border-border; }
-
+@layer base {
+  * {
+    @apply border-border;
+  }
   html, body, #root {
-    min-width: 0;
-    overflow-x: hidden;
-    background: #050505;
-    color: #f5f5f5;
+    @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv11";
   }
-
   body {
-    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background-image: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.018) 0 1px, transparent 1px 72px), radial-gradient(circle at 12% 0%, rgb(217 17 23 / 0.22), transparent 34%), linear-gradient(180deg, #050505 0%, #0a0a0a 100%);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-image:
+      radial-gradient(circle at 15% 0%, hsl(0 85% 30% / 0.18), transparent 40%),
+      radial-gradient(circle at 90% 100%, hsl(48 100% 50% / 0.06), transparent 40%);
     background-attachment: fixed;
-  }
-
-  :focus-visible {
-    outline: 2px solid #fbc206;
-    outline-offset: 3px;
   }
 }
 
 @layer components {
-  .font-display { font-family: Rajdhani, Oswald, Inter, sans-serif; letter-spacing: 0; }
-  .font-mono-tech { font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, monospace; }
-
-  .broadcast-shell { position: relative; isolation: isolate; background: #050505; }
-  .broadcast-shell::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: -1;
-    background-image: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.025) 0 1px, transparent 1px 4px), linear-gradient(118deg, transparent 0 58%, rgb(135 6 8 / 0.34) 58% 67%, transparent 67% 100%);
+  .font-display {
+    font-family: 'Rajdhani', 'Oswald', 'Inter', sans-serif;
+    letter-spacing: 0.02em;
   }
-
-  .broadcast-topbar { border-bottom: 1px solid rgb(251 194 6 / 0.28); background: rgb(5 5 5 / 0.92); backdrop-filter: blur(12px); }
-  .brand-lockup { display: flex; align-items: baseline; gap: 0.85rem; min-width: 0; }
-  .brand-mark { color: #f5f5f5; font-family: Rajdhani, Oswald, sans-serif; font-size: clamp(1.65rem, 3vw, 2.3rem); font-style: italic; font-weight: 900; line-height: 1; }
-  .brand-name { color: #aaa6a6; font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase; }
-  .status-pill { border: 1px solid rgb(217 17 23 / 0.7); color: #f5f5f5; padding: 0.35rem 0.55rem; }
-  .status-live::before { content: ""; display: inline-block; width: 0.45rem; height: 0.45rem; margin-right: 0.45rem; background: #d91117; }
-
-  .event-hero { position: relative; overflow: hidden; border-bottom: 1px solid rgb(251 194 6 / 0.24); background: var(--gradient-hero); }
-  .event-hero::before, .event-hero::after { content: ""; position: absolute; pointer-events: none; transform: skewX(-22deg); }
-  .event-hero::before { inset: -18% auto -18% 56%; width: 26%; background: rgb(217 17 23 / 0.7); }
-  .event-hero::after { inset: 0 auto 0 84%; width: 2px; background: #fbc206; box-shadow: -54px 0 0 rgb(251 194 6 / 0.28), -108px 0 0 rgb(251 194 6 / 0.16); }
-  .event-hero.compact .broadcast-title { font-size: clamp(2rem, 5vw, 4.6rem); }
-  .broadcast-kicker { color: #fbc206; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; }
-  .broadcast-title { max-width: 980px; color: #f5f5f5; font-family: Rajdhani, Oswald, sans-serif; font-size: clamp(2.8rem, 7.4vw, 6.9rem); font-style: italic; font-weight: 900; letter-spacing: 0; line-height: 0.88; text-transform: uppercase; }
-  .broadcast-title span { display: block; color: #d91117; text-shadow: 0 0 22px rgb(217 17 23 / 0.28); }
-  .event-meta-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid rgb(251 194 6 / 0.38); background: rgb(0 0 0 / 0.46); }
-  .event-meta-grid div { min-width: 0; padding: 0.8rem; border-left: 1px solid rgb(251 194 6 / 0.18); }
-  .event-meta-grid div:first-child { border-left: 0; }
-  .event-meta-grid span { display: block; color: #aaa6a6; font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; }
-  .event-meta-grid strong { display: block; margin-top: 0.2rem; font-family: Rajdhani, sans-serif; font-size: 1.15rem; text-transform: uppercase; }
-
-  .ticker-strip { border-top: 1px solid rgb(251 194 6 / 0.2); background: rgb(0 0 0 / 0.55); }
-  .ticker-mask { overflow: hidden; width: 100%; }
-  .ticker-track { display: inline-flex; min-width: max-content; animation: ticker 34s linear infinite; }
-  .ticker-track span { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; color: #aaa6a6; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; }
-  .ticker-track span::before { content: ""; width: 0.45rem; height: 0.45rem; background: #d91117; }
-
-  .telemetry-ribbon { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border: 1px solid rgb(251 194 6 / 0.26); background: rgb(17 17 17 / 0.92); }
-  .telemetry-cell { min-width: 0; padding: 0.75rem 0.9rem; border-left: 1px solid rgb(255 255 255 / 0.08); }
-  .telemetry-cell:first-child { border-left: 0; }
-  .telemetry-cell span { display: block; color: #aaa6a6; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 0.64rem; letter-spacing: 0.18em; text-transform: uppercase; }
-  .telemetry-cell strong { display: block; margin-top: 0.25rem; color: #f5f5f5; font-family: Rajdhani, sans-serif; font-size: clamp(1.35rem, 2.8vw, 2rem); font-style: italic; font-weight: 900; line-height: 1; }
-  .telemetry-cell small { margin-left: 0.25rem; color: #aaa6a6; font-size: 0.7rem; font-style: normal; }
-  .text-special { color: #d000c8 !important; }
-
-  .broadcast-panel, .carbon-panel { position: relative; overflow: hidden; border: 1px solid rgb(255 255 255 / 0.12); border-radius: 2px; background: linear-gradient(180deg, #191919, #111111); box-shadow: inset 4px 0 0 rgb(217 17 23 / 0.72); }
-  .broadcast-panel::before, .carbon-panel::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(120deg, transparent 0 70%, rgb(135 6 8 / 0.22) 70% 100%); }
-  .panel-heading { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid rgb(251 194 6 / 0.22); padding: 0.85rem 1rem; }
-  .panel-heading span { font-family: Rajdhani, sans-serif; font-size: 1.25rem; font-style: italic; font-weight: 900; letter-spacing: 0; text-transform: uppercase; }
-  .panel-heading small { color: #fbc206; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 0.63rem; letter-spacing: 0.18em; text-transform: uppercase; }
-
-  .broadcast-player { position: relative; overflow: hidden; border: 1px solid rgb(251 194 6 / 0.28); border-radius: 2px; background: #050505; box-shadow: 0 20px 80px rgb(0 0 0 / 0.34); }
-  .broadcast-player::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.03) 0 1px, transparent 1px 4px); mix-blend-mode: screen; }
-  .player-badge, .live-chip { display: inline-flex; align-items: center; gap: 0.45rem; border: 1px solid rgb(251 194 6 / 0.38); background: rgb(5 5 5 / 0.82); color: #aaa6a6; padding: 0.35rem 0.65rem; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; }
-  .player-badge.live, .live-chip { border-color: rgb(217 17 23 / 0.76); background: var(--gradient-live); color: #fff; }
-  .live-chip { position: absolute; left: 0.75rem; top: 0.75rem; font-family: Rajdhani, sans-serif; font-weight: 900; }
-  .broadcast-button { border: 1px solid #d91117; background: rgb(217 17 23 / 0.08); color: #f5f5f5; padding: 0.55rem 0.9rem; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; transition: background-color 160ms ease, border-color 160ms ease; }
-  .broadcast-button:hover { background: #d91117; border-color: #fbc206; }
-
-  .results-table { position: relative; padding: 0.5rem 1rem 1rem; }
-  .results-row { display: grid; grid-template-columns: minmax(120px, 0.32fr) minmax(0, 1fr); gap: 1rem; border-bottom: 1px solid rgb(255 255 255 / 0.08); padding: 0.7rem 0; }
-  .results-row span { color: #aaa6a6; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; }
-  .results-row strong { color: #f5f5f5; font-family: Rajdhani, sans-serif; font-size: 1.18rem; text-transform: uppercase; }
-
-  .live-chat-panel { min-height: 100%; }
-  .chat-feed { position: relative; display: grid; gap: 0.75rem; max-height: 510px; overflow-y: auto; padding: 1rem; }
-  .chat-line { display: grid; grid-template-columns: 3.2rem minmax(0, 1fr); gap: 0.25rem 0.7rem; border-bottom: 1px solid rgb(255 255 255 / 0.07); padding-bottom: 0.65rem; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 0.78rem; }
-  .chat-line time { color: #aaa6a6; }
-  .chat-line strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .chat-line span { grid-column: 2; color: #f5f5f5; }
-  .chat-input-ghost { margin: 0 1rem 1rem; border: 1px solid rgb(255 255 255 / 0.1); background: rgb(0 0 0 / 0.28); padding: 0.75rem; color: #aaa6a6; font-size: 0.82rem; }
-
-  .broadcast-footer { border-top: 1px solid rgb(251 194 6 / 0.2); background: rgb(0 0 0 / 0.74); }
-  .scan-lines { background-image: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.025) 0 1px, transparent 1px 4px); }
-  .live-pulse { animation: live-pulse 1.6s ease-in-out infinite; }
-}
-
-@media (max-width: 1024px) {
-  .telemetry-ribbon { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .telemetry-cell:nth-child(4) { border-left: 0; }
-  .event-meta-grid { grid-template-columns: 1fr; }
-  .event-meta-grid div { border-left: 0; border-top: 1px solid rgb(251 194 6 / 0.18); }
-  .event-meta-grid div:first-child { border-top: 0; }
-}
-
-@media (max-width: 640px) {
-  .brand-lockup { align-items: flex-start; flex-direction: column; gap: 0.2rem; }
-  .brand-name { font-size: 0.58rem; line-height: 1.35; }
-  .event-hero::before { left: 48%; width: 48%; opacity: 0.52; }
-  .telemetry-ribbon { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .telemetry-cell:nth-child(odd) { border-left: 0; }
-  .results-row { grid-template-columns: 1fr; gap: 0.2rem; }
-  .chat-line { grid-template-columns: 2.8rem minmax(0, 1fr); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
-  .ticker-track { transform: none !important; }
+  .font-mono-tech {
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  }
+  .carbon-panel {
+    background: var(--gradient-card);
+    border: 1px solid hsl(var(--border));
+    backdrop-filter: blur(8px);
+  }
+  .live-pulse {
+    animation: live-pulse 1.6s ease-in-out infinite;
+  }
+  .scan-lines {
+    background-image: repeating-linear-gradient(
+      0deg,
+      hsl(0 0% 100% / 0.02) 0px,
+      hsl(0 0% 100% / 0.02) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+  .ticker-track {
+    animation: ticker 40s linear infinite;
+  }
 }
 
 @keyframes live-pulse {
