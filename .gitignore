@@ -22,3 +22,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secrets and local artifacts
+*.key
+*.pem
+*.pfx
+*.p12
+*.exe
+*.zip
+node_modules/
+dist/
+.env
+.env.*
+Projektabschluss HTTPS Integration_files/
